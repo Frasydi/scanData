@@ -3,17 +3,25 @@ import json
 import re
 import pytesseract
 from ktp import KTPInformation
+import numpy as np
+
+config = r'--oem 3 --psm 6'
+
+kernel = np.ones((5,5),np.uint8)
 
 class KTPOCR(object):
     def __init__(self, image):
+        # image =cv2.dilate(image, kernel, iterations = 1)
+        # image = cv2.normalize(image, norm_img, 0, 255, cv2.NORM_MINMAX)
+        # image = cv2.GaussianBlur(image, (1, 1), 0)
         self.image = cv2.imread(image)
         self.gray = cv2.cvtColor(self.image, cv2.COLOR_BGR2GRAY)
-        self.th, self.threshed = cv2.threshold(self.gray, 127, 255, cv2.THRESH_TRUNC)
+        self.threshed = cv2.erode(self.gray, kernel, iterations = 1)
         self.result = KTPInformation()
         self.master_process()
 
     def process(self, image):
-        raw_extracted_text = pytesseract.image_to_string((self.threshed), lang="ind")
+        raw_extracted_text = pytesseract.image_to_string((self.threshed), lang="ind", config=config)
         return raw_extracted_text
 
     def word_to_number_converter(self, word):
@@ -33,6 +41,12 @@ class KTPOCR(object):
         word_dict = {
             'b' : "6",
             'e' : "2",
+            'o' : '0',
+            'O' : "0",
+            "S" : "5",
+            "s" : "5",
+            "?" : "7",
+            ")" : "1"
         }
         res = ""
         for letter in word:
@@ -43,7 +57,7 @@ class KTPOCR(object):
         return res
     
     def extract(self, extracted_result):
-        #print(extracted_result.replace('\n', ' -- '))
+        print(extracted_result.replace('\n', ' -- '))
         for word in extracted_result.split("\n"):
             if "NIK" in word:
                 word = word.split(':')

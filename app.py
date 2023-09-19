@@ -6,6 +6,7 @@ import os
 app = Flask(__name__)
 CORS(app)  # Aktifkan CORS untuk aplikasi Flask Anda
 
+
 app.config['UPLOAD_FOLDER'] = 'static/images'
 app.config['ALLOWED_EXTENSIONS'] = {'png', 'jpg', 'jpeg'}
 
@@ -47,6 +48,12 @@ def extract_nik():
             'filename': unique_filename,
             'nik': extracted_nik
         }
+
+        try :
+            os.remove(filename)
+        except : 
+            print("Cant Remove File")
+
         return jsonify(response_data), 200
     else:
         return jsonify({'message': 'File yang diupload tidak valid!'}), 400
