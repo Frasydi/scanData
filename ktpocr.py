@@ -16,11 +16,14 @@ class KTPOCR(object):
         # image = cv2.normalize(image, norm_img, 0, 255, cv2.NORM_MINMAX)
         # image = cv2.GaussianBlur(image, (1, 1), 0)
         self.image = cv2.imread(image)
-        self.image = cv2.cvtColor(self.image, cv2.COLOR_BGR2GRAY)
-        self.resultImage = cv2.erode(self.image, kernel, iterations = 1)
-        # self.resultImage = cv2.dilate(self.image, kernel, iterations = 1)
+        gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        thresh = cv2.threshold(gray, 0, 255,
+	        cv2.THRESH_BINARY_INV | cv2.THRESH_OTSU)[1]
+        median = cv2.medianBlur(thresh, 3)
+        final = median
+
         
-        cv2.imwrite("edit.jpg", self.resultImage)
+        cv2.imwrite("edit.jpg", final)
 
         self.result = KTPInformation()
         self.master_process()
